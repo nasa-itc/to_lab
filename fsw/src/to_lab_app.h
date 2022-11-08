@@ -47,7 +47,7 @@
 
 /*****************************************************************************/
 
-#define TO_TASK_MSEC 500 /* run at 2 Hz */
+#define TO_TASK_MSEC 100 /* run at 10 Hz */
 #define TO_UNUSED    CFE_SB_MSGID_RESERVED
 
 /**
@@ -61,7 +61,7 @@
 #define TO_LAB_TLM_PIPE_DEPTH OS_QUEUE_MAX_DEPTH
 
 #define cfgTLM_ADDR        "192.168.1.81"
-#define cfgTLM_PORT        1235
+#define cfgTLM_PORT        5013
 #define TO_LAB_VERSION_NUM "5.1.0"
 
 /******************************************************************************/

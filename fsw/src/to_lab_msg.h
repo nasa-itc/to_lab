@@ -31,11 +31,11 @@
 
 #define TO_NOP_CC             0 /*  no-op command     */
 #define TO_RESET_STATUS_CC    1 /*  reset status      */
-#define TO_ADD_PKT_CC         2 /*  add packet        */
+#define TO_OUTPUT_ENABLE_CC   2 /*  output enable     */
 #define TO_SEND_DATA_TYPES_CC 3 /*  send data types   */
 #define TO_REMOVE_PKT_CC      4 /*  remove packet     */
 #define TO_REMOVE_ALL_PKT_CC  5 /*  remove all packet */
-#define TO_OUTPUT_ENABLE_CC   6 /*  output enable     */
+#define TO_ADD_PKT_CC         6 /*  add packet        */
 
 /******************************************************************************/
 
