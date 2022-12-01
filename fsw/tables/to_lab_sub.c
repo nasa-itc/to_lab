@@ -41,7 +41,7 @@
 #include "to_lab_msgids.h"
 #include "ci_lab_msgids.h"
 
-#include "sample_app_msgids.h"
+#include "sample_msgids.h"
 
 #if 0
 #include "hs_msgids.h"
