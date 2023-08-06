@@ -1,41 +1,35 @@
 /************************************************************************
-**
-**      GSC-18128-1, "Core Flight Executive Version 6.7"
-**
-**      Copyright (c) 2006-2019 United States Government as represented by
-**      the Administrator of the National Aeronautics and Space Administration.
-**      All Rights Reserved.
-**
-**      Licensed under the Apache License, Version 2.0 (the "License");
-**      you may not use this file except in compliance with the License.
-**      You may obtain a copy of the License at
-**
-**        http://www.apache.org/licenses/LICENSE-2.0
-**
-**      Unless required by applicable law or agreed to in writing, software
-**      distributed under the License is distributed on an "AS IS" BASIS,
-**      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-**      See the License for the specific language governing permissions and
-**      limitations under the License.
-**
-** File: to_lab_msg.h
-**
-** Purpose:
-**  Define TO Lab Messages and info
-**
-** Notes:
-**
-*************************************************************************/
-#ifndef _to_lab_msg_h_
-#define _to_lab_msg_h_
+ * NASA Docket No. GSC-18,719-1, and identified as “core Flight System: Bootes”
+ *
+ * Copyright (c) 2020 United States Government as represented by the
+ * Administrator of the National Aeronautics and Space Administration.
+ * All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain
+ * a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ************************************************************************/
 
-#define TO_NOP_CC             0 /*  no-op command     */
-#define TO_RESET_STATUS_CC    1 /*  reset status      */
-#define TO_OUTPUT_ENABLE_CC   2 /*  output enable     */
-#define TO_SEND_DATA_TYPES_CC 3 /*  send data types   */
-#define TO_REMOVE_PKT_CC      4 /*  remove packet     */
-#define TO_REMOVE_ALL_PKT_CC  5 /*  remove all packet */
-#define TO_ADD_PKT_CC         6 /*  add packet        */
+/**
+ * @file
+ *   Define TO Lab Messages and info
+ */
+#ifndef TO_LAB_MSG_H
+#define TO_LAB_MSG_H
+
+#define TO_LAB_NOOP_CC            0 /*  no-op command     */
+#define TO_LAB_RESET_STATUS_CC    1 /*  reset status      */
+#define TO_LAB_OUTPUT_ENABLE_CC   2 /*  output enable     */
+#define TO_LAB_SEND_DATA_TYPES_CC 3 /*  send data types   */
+#define TO_LAB_REMOVE_PKT_CC      4 /*  remove packet     */
+#define TO_LAB_REMOVE_ALL_PKT_CC  5 /*  remove all packet */
+#define TO_LAB_ADD_PKT_CC         6 /*  add packet        */
 
 /******************************************************************************/
 
@@ -48,11 +42,9 @@ typedef struct
 
 typedef struct
 {
-    uint8                  TlmHeader[CFE_SB_TLM_HDR_SIZE];
-    TO_LAB_HkTlm_Payload_t Payload;
+    CFE_MSG_TelemetryHeader_t TelemetryHeader; /**< \brief Telemetry header */
+    TO_LAB_HkTlm_Payload_t    Payload;         /**< \brief Telemetry payload */
 } TO_LAB_HkTlm_t;
-
-#define TO_HK_TLM_LNGTH sizeof(TO_LAB_HkTlm_t)
 
 /******************************************************************************/
 
@@ -80,18 +72,15 @@ typedef struct
 
 typedef struct
 {
-    uint8                      TlmHeader[CFE_SB_TLM_HDR_SIZE];
-    TO_LAB_DataTypes_Payload_t Payload;
-} TO_LAB_DataTypes_t;
-
-#define TO_DATA_TYPES_LNGTH sizeof(TO_LAB_DataTypes_t)
+    CFE_MSG_TelemetryHeader_t  TelemetryHeader; /**< \brief Telemetry header */
+    TO_LAB_DataTypes_Payload_t Payload;         /**< \brief Telemetry payload */
+} TO_LAB_DataTypesTlm_t;
 
 /******************************************************************************/
 
 typedef struct
 {
-    uint8 CmdHeader[CFE_SB_CMD_HDR_SIZE];
-
+    CFE_MSG_CommandHeader_t CmdHeade; /**< \brief Command header */
 } TO_LAB_NoArgsCmd_t;
 
 /*
@@ -101,24 +90,23 @@ typedef struct
  *
  * This matches the pattern in CFE core and other modules.
  */
-typedef TO_LAB_NoArgsCmd_t TO_LAB_Noop_t;
-typedef TO_LAB_NoArgsCmd_t TO_LAB_ResetCounters_t;
-typedef TO_LAB_NoArgsCmd_t TO_LAB_RemoveAll_t;
-typedef TO_LAB_NoArgsCmd_t TO_LAB_SendDataTypes_t;
+typedef TO_LAB_NoArgsCmd_t TO_LAB_NoopCmd_t;
+typedef TO_LAB_NoArgsCmd_t TO_LAB_ResetCountersCmd_t;
+typedef TO_LAB_NoArgsCmd_t TO_LAB_RemoveAllCmd_t;
+typedef TO_LAB_NoArgsCmd_t TO_LAB_SendDataTypesCmd_t;
 
 typedef struct
 {
     CFE_SB_MsgId_t Stream;
-    uint16         PktSize;
     CFE_SB_Qos_t   Flags;
     uint8          BufLimit;
 } TO_LAB_AddPacket_Payload_t;
 
 typedef struct
 {
-    uint8                      CmdHeader[CFE_SB_CMD_HDR_SIZE];
-    TO_LAB_AddPacket_Payload_t Payload;
-} TO_LAB_AddPacket_t;
+    CFE_MSG_CommandHeader_t    CmdHeader; /**< \brief Command header */
+    TO_LAB_AddPacket_Payload_t Payload;   /**< \brief Command payload */
+} TO_LAB_AddPacketCmd_t;
 
 /*****************************************************************************/
 
@@ -127,7 +115,7 @@ typedef struct
     CFE_SB_MsgId_t Stream;
     CFE_SB_Qos_t   Flags;
     uint16         BufLimit;
-} TO_subscription_t;
+} TO_LAB_subscription_t;
 
 /******************************************************************************/
 
@@ -138,9 +126,9 @@ typedef struct
 
 typedef struct
 {
-    uint8                         CmdHeader[CFE_SB_CMD_HDR_SIZE];
-    TO_LAB_RemovePacket_Payload_t Payload;
-} TO_LAB_RemovePacket_t;
+    CFE_MSG_CommandHeader_t       CmdHeader; /**< \brief Command header */
+    TO_LAB_RemovePacket_Payload_t Payload;   /**< \brief Command payload */
+} TO_LAB_RemovePacketCmd_t;
 
 /******************************************************************************/
 
@@ -151,14 +139,10 @@ typedef struct
 
 typedef struct
 {
-    uint8                         CmdHeader[CFE_SB_CMD_HDR_SIZE];
-    TO_LAB_EnableOutput_Payload_t Payload;
-} TO_LAB_EnableOutput_t;
+    CFE_MSG_CommandHeader_t       CmdHeader; /**< \brief Command header */
+    TO_LAB_EnableOutput_Payload_t Payload;   /**< \brief Command payload */
+} TO_LAB_EnableOutputCmd_t;
 
 /******************************************************************************/
 
-#endif /* _to_lab_msg_h_ */
-
-/************************/
-/*  End of File Comment */
-/************************/
+#endif
