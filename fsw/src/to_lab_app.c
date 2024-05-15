@@ -29,6 +29,12 @@
 #include "to_lab_version.h"
 #include "to_lab_sub_table.h"
 
+/* Start additional includes for hostname snippet */
+#include<sys/socket.h>
+#include<netdb.h>	//hostent
+#include<arpa/inet.h>
+/* End additional includes for hostname snippet */
+
 /*
 ** Global Data Section
 */
@@ -250,6 +256,28 @@ int32 TO_LAB_EnableOutput(const TO_LAB_EnableOutputCmd_t *data)
         TO_LAB_openTLM();
         TO_LAB_Global.downlink_on = true;
     }
+
+    /* 
+        Start hostname snippet from: https://stackoverflow.com/questions/38002016/problems-with-gethostbyname-c
+    */
+    struct hostent *he;
+	struct in_addr **addr_list;
+    int i;
+
+    if ( (he = gethostbyname(TO_LAB_Global.tlm_dest_IP) ) != NULL) 
+    {
+        addr_list = (struct in_addr **) he->h_addr_list;
+        for(i = 0; addr_list[i] != NULL; i++) 
+        {
+            //Return the first one;
+            strcpy(TO_LAB_Global.tlm_dest_IP , inet_ntoa(*addr_list[i]) );
+            ++TO_LAB_Global.HkTlm.Payload.CommandCounter;
+            return CFE_SUCCESS;
+        }
+    }
+    /* 
+        End hostname snippet from: https://stackoverflow.com/questions/38002016/problems-with-gethostbyname-c
+    */
 
     ++TO_LAB_Global.HkTlm.Payload.CommandCounter;
     return CFE_SUCCESS;
