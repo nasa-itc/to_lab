@@ -30,9 +30,13 @@
 #include "to_lab_sub_table.h"
 
 /* Start additional includes for hostname snippet */
-#include<sys/socket.h>
-#include<netdb.h>	//hostent
-#include<arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 /* End additional includes for hostname snippet */
 
 /*
@@ -245,39 +249,45 @@ int32 TO_LAB_EnableOutput(const TO_LAB_EnableOutputCmd_t *data)
 {
     const TO_LAB_EnableOutput_Payload_t *pCmd = &data->Payload;
 
-    (void)CFE_SB_MessageStringGet(TO_LAB_Global.tlm_dest_IP, pCmd->dest_IP, "", sizeof(TO_LAB_Global.tlm_dest_IP),
-                                  sizeof(pCmd->dest_IP));
-    TO_LAB_Global.suppress_sendto = false;
-    CFE_EVS_SendEvent(TO_LAB_TLMOUTENA_INF_EID, CFE_EVS_EventType_INFORMATION, "TO telemetry output enabled for IP %s",
-                      TO_LAB_Global.tlm_dest_IP);
+    (void)CFE_SB_MessageStringGet(TO_LAB_Global.tlm_dest_IP, pCmd->dest_IP, "", 
+                                  sizeof(TO_LAB_Global.tlm_dest_IP), sizeof(pCmd->dest_IP));
 
-    if (!TO_LAB_Global.downlink_on) /* Then turn it on, otherwise we will just switch destination addresses*/
+    TO_LAB_Global.suppress_sendto = false;
+    CFE_EVS_SendEvent(TO_LAB_TLMOUTENA_INF_EID, CFE_EVS_EventType_INFORMATION, 
+                      "TO telemetry output enabled for IP %s", TO_LAB_Global.tlm_dest_IP);
+
+    if (!TO_LAB_Global.downlink_on) /* Then turn it on, otherwise we will just switch destination addresses */
     {
         TO_LAB_openTLM();
         TO_LAB_Global.downlink_on = true;
     }
 
-    /* 
-        Start hostname snippet from: https://stackoverflow.com/questions/38002016/problems-with-gethostbyname-c
-    */
-    struct hostent *he;
-	struct in_addr **addr_list;
-    int i;
+    struct addrinfo hints, *res, *p;
+    void *addr;
+    char resolved_ip[INET_ADDRSTRLEN] = "0.0.0.0"; // Default to 0.0.0.0 in case of failure
 
-    if ( (he = gethostbyname(TO_LAB_Global.tlm_dest_IP) ) != NULL) 
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;  // Use AF_UNSPEC for IPv6 support if needed
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(TO_LAB_Global.tlm_dest_IP, NULL, &hints, &res) == 0)
     {
-        addr_list = (struct in_addr **) he->h_addr_list;
-        for(i = 0; addr_list[i] != NULL; i++) 
+        for (p = res; p != NULL; p = p->ai_next)
         {
-            //Return the first one;
-            strcpy(TO_LAB_Global.tlm_dest_IP , inet_ntoa(*addr_list[i]) );
-            ++TO_LAB_Global.HkTlm.Payload.CommandCounter;
-            return CFE_SUCCESS;
+            struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+            addr = &(ipv4->sin_addr);
+
+            // Convert to string and store in TO_LAB_Global.tlm_dest_IP
+            if (inet_ntop(p->ai_family, addr, resolved_ip, sizeof(resolved_ip)) != NULL)
+            {
+                strncpy(TO_LAB_Global.tlm_dest_IP, resolved_ip, sizeof(TO_LAB_Global.tlm_dest_IP));
+                ++TO_LAB_Global.HkTlm.Payload.CommandCounter;
+                freeaddrinfo(res);
+                return CFE_SUCCESS;
+            }
         }
+        freeaddrinfo(res);
     }
-    /* 
-        End hostname snippet from: https://stackoverflow.com/questions/38002016/problems-with-gethostbyname-c
-    */
 
     ++TO_LAB_Global.HkTlm.Payload.CommandCounter;
     return CFE_SUCCESS;
